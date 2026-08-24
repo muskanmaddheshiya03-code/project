@@ -8,14 +8,25 @@ import {
   SEED_HISTORY,
   uid,
 } from '../data/mockData.js'
+import {
+  SEED_LISTINGS,
+  SEED_ORDERS,
+  ORDER_FLOW,
+  stepIndex,
+  isTerminal,
+} from '../data/sellData.js'
 
 const STORAGE_KEY = 'agrismart.state.v1'
+
+/* local date stamp (YYYY-MM-DD) for order/history events */
+const today = () => new Date().toISOString().slice(0, 10)
 
 const DEFAULT_STATE = {
   user: SEED_USER,
   location: DEFAULT_LOCATION,
   language: 'en',
   theme: 'light',
+  mode: 'farmer', // 'farmer' | 'sell' — which experience the sidebar/nav shows
   units: { temp: 'C' },
   settings: {
     notifications: true,
@@ -27,6 +38,11 @@ const DEFAULT_STATE = {
   savedReports: SEED_REPORTS,
   history: SEED_HISTORY,
   notifications: SEED_ALERTS,
+  // Sell Mode (Direct Farmer → Consumer) — mock data
+  sell: {
+    listings: SEED_LISTINGS,
+    orders: SEED_ORDERS,
+  },
   chat: [
     {
       id: 'greet',
@@ -47,6 +63,7 @@ function loadState() {
       ...saved,
       units: { ...DEFAULT_STATE.units, ...(saved.units || {}) },
       settings: { ...DEFAULT_STATE.settings, ...(saved.settings || {}) },
+      sell: { ...DEFAULT_STATE.sell, ...(saved.sell || {}) },
     }
   } catch {
     return DEFAULT_STATE
@@ -110,6 +127,113 @@ function reducer(state, action) {
       return { ...state, chat: action.payload }
     case 'ADD_CHAT':
       return { ...state, chat: [...state.chat, { ...action.payload, id: uid() }] }
+
+    /* ---- Sell Mode ---- */
+    case 'SET_MODE':
+      return { ...state, mode: action.payload }
+
+    case 'ADD_LISTING':
+      return {
+        ...state,
+        sell: { ...state.sell, listings: [action.payload, ...state.sell.listings] },
+      }
+    case 'UPDATE_LISTING':
+      return {
+        ...state,
+        sell: {
+          ...state.sell,
+          listings: state.sell.listings.map((l) =>
+            l.id === action.payload.id ? { ...l, ...action.payload } : l
+          ),
+        },
+      }
+    case 'REMOVE_LISTING':
+      return {
+        ...state,
+        sell: {
+          ...state.sell,
+          listings: state.sell.listings.filter((l) => l.id !== action.payload),
+        },
+      }
+    case 'VERIFY_LISTING':
+      return {
+        ...state,
+        sell: {
+          ...state.sell,
+          listings: state.sell.listings.map((l) =>
+            l.id === action.payload ? { ...l, verified: { ...l.verified, info: true } } : l
+          ),
+        },
+      }
+
+    case 'ADD_ORDER':
+      return {
+        ...state,
+        sell: { ...state.sell, orders: [action.payload, ...state.sell.orders] },
+      }
+    case 'UPDATE_ORDER': {
+      const { id, status, patch = {}, at } = action.payload
+      return {
+        ...state,
+        sell: {
+          ...state.sell,
+          orders: state.sell.orders.map((o) => {
+            if (o.id !== id) return o
+            return {
+              ...o,
+              ...patch,
+              status: status || o.status,
+              history: status ? [...o.history, { status, at }] : o.history,
+            }
+          }),
+        },
+      }
+    }
+    case 'ADVANCE_ORDER': {
+      const { id, at } = action.payload
+      return {
+        ...state,
+        sell: {
+          ...state.sell,
+          orders: state.sell.orders.map((o) => {
+            if (o.id !== id) return o
+            const idx = stepIndex(o.status)
+            if (isTerminal(o.status) || idx < 0 || idx >= ORDER_FLOW.length - 1) return o
+            const next = ORDER_FLOW[idx + 1]
+            return { ...o, status: next, history: [...o.history, { status: next, at }] }
+          }),
+        },
+      }
+    }
+    case 'SUBMIT_HARVEST': {
+      const { listingId, harvest, at } = action.payload
+      return {
+        ...state,
+        sell: {
+          ...state.sell,
+          listings: state.sell.listings.map((l) =>
+            l.id === listingId ? { ...l, harvest, status: 'harvested' } : l
+          ),
+          // move confirmed reservations on this listing to "awaiting consumer confirmation"
+          orders: state.sell.orders.map((o) => {
+            if (o.listingId !== listingId) return o
+            if (o.status === 'awaiting_harvest' || o.status === 'reservation_confirmed') {
+              return {
+                ...o,
+                finalPrice: harvest.finalPrice,
+                status: 'awaiting_consumer',
+                history: [
+                  ...o.history,
+                  { status: 'harvest_confirmed', at },
+                  { status: 'awaiting_consumer', at },
+                ],
+              }
+            }
+            return o
+          }),
+        },
+      }
+    }
 
     case 'RESET_ALL':
       return { ...DEFAULT_STATE }
@@ -190,6 +314,34 @@ export function AppProvider({ children }) {
       markAllRead: () => dispatch({ type: 'MARK_ALL_READ' }),
       setChat: (payload) => dispatch({ type: 'SET_CHAT', payload }),
       addChat: (payload) => dispatch({ type: 'ADD_CHAT', payload }),
+
+      // ---- Sell Mode ----
+      setMode: (payload) => dispatch({ type: 'SET_MODE', payload }),
+      addListing: (payload) => dispatch({ type: 'ADD_LISTING', payload }),
+      updateListing: (payload) => dispatch({ type: 'UPDATE_LISTING', payload }),
+      removeListing: (payload) => dispatch({ type: 'REMOVE_LISTING', payload }),
+      verifyListing: (id) => dispatch({ type: 'VERIFY_LISTING', payload: id }),
+      reserveProduce: (order) => dispatch({ type: 'ADD_ORDER', payload: order }),
+      acceptReservation: (id) =>
+        dispatch({ type: 'UPDATE_ORDER', payload: { id, status: 'reservation_confirmed', at: today() } }),
+      rejectReservation: (id) =>
+        dispatch({
+          type: 'UPDATE_ORDER',
+          payload: { id, status: 'cancelled', at: today(), patch: { note: 'Reservation rejected by farmer.' } },
+        }),
+      submitHarvest: (listingId, harvest) =>
+        dispatch({ type: 'SUBMIT_HARVEST', payload: { listingId, harvest, at: today() } }),
+      confirmPurchase: (id) =>
+        dispatch({ type: 'UPDATE_ORDER', payload: { id, status: 'order_confirmed', at: today() } }),
+      cancelOrder: (id, note = 'Cancelled by consumer.') =>
+        dispatch({ type: 'UPDATE_ORDER', payload: { id, status: 'cancelled', at: today(), patch: { note } } }),
+      markUnableToFulfill: (id) =>
+        dispatch({
+          type: 'UPDATE_ORDER',
+          payload: { id, status: 'unable_to_fulfill', at: today(), patch: { note: 'Farmer unable to fulfill reservation.' } },
+        }),
+      advanceOrder: (id) => dispatch({ type: 'ADVANCE_ORDER', payload: { id, at: today() } }),
+
       resetAll: () => dispatch({ type: 'RESET_ALL' }),
       pushToast,
       removeToast,

@@ -5,6 +5,7 @@ import App from './App.jsx'
 import { AppProvider } from './context/AppContext.jsx'
 import './index.css'
 import './styles/app.css'
+import './styles/sell.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

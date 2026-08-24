@@ -1,0 +1,382 @@
+/* ============================================================
+   AgriSmart — Sell Mode styles (loaded after app.css)
+   Only the few pieces not already covered by the design system.
+   Everything else reuses .card/.btn/.pill/.field/.timeline/etc.
+   ============================================================ */
+
+/* ---- Sidebar mode switcher (sits on the dark sidebar gradient) ---- */
+.mode-switch {
+  display: flex;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+.mode-switch button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: var(--sidebar-text);
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 8px 6px;
+  border-radius: 9px;
+  transition: background 0.15s, color 0.15s;
+}
+.mode-switch button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.mode-switch button.on {
+  background: #fff;
+  color: var(--primary-dark);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+/* ---- Produce cards / grid ---- */
+.produce-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+  gap: 18px;
+}
+.produce-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.12s, box-shadow 0.15s;
+}
+.produce-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+.produce-thumb {
+  height: 150px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.produce-thumb.tall {
+  height: 230px;
+  border-radius: var(--radius);
+}
+.produce-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.produce-thumb .pt-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+.produce-thumb .pt-cat {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.produce-body {
+  padding: 14px 15px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.produce-title {
+  font-weight: 700;
+  font-family: var(--font-head);
+  font-size: 16px;
+}
+.produce-farmer {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.produce-price {
+  font-weight: 700;
+  font-family: var(--font-head);
+  font-size: 18px;
+  color: var(--primary-dark);
+}
+.produce-foot {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+/* ---- Product details two-column ---- */
+.product-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ---- Quantity stepper ---- */
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.qty-stepper button {
+  width: 46px;
+  height: 46px;
+  border: none;
+  background: var(--surface-2);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+}
+.qty-stepper button:hover:not(:disabled) {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+.qty-stepper button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.qty-stepper .qty-val {
+  min-width: 66px;
+  text-align: center;
+  font-weight: 700;
+  font-family: var(--font-head);
+  font-size: 16px;
+}
+.qty-unit {
+  margin-left: 10px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ---- Verification checklist (Add Produce) ---- */
+.verify-list {
+  display: flex;
+  flex-direction: column;
+}
+.verify-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 2px;
+  font-size: 14.5px;
+  border-bottom: 1px solid var(--border);
+}
+.verify-row:last-child {
+  border-bottom: none;
+}
+.verify-row .vr-ic {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.verify-row.pending {
+  color: var(--text-muted);
+}
+.verify-row.pending .vr-ic {
+  background: var(--surface-3);
+  color: var(--text-soft);
+}
+.verify-row.active .vr-ic {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+.verify-row.done .vr-ic {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* Verification badges (explicit Info-verified vs Quality-not-verified split) */
+.verify-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.disclaimer {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.disclaimer svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--text-soft);
+}
+
+/* ---- Expected vs Final block ---- */
+.exp-final {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.exp-col {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--surface-2);
+}
+.exp-col.final {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.exp-col h4 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-soft);
+  margin-bottom: 10px;
+}
+.exp-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 14px;
+}
+.exp-row .k {
+  color: var(--text-muted);
+}
+.exp-row .v {
+  font-weight: 600;
+}
+
+/* ---- Key/value detail grid ---- */
+.kv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.kv {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.kv .k {
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+.kv .v {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ---- Order / reservation rows ---- */
+.order-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+}
+.order-row .or-ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+.order-row .or-main {
+  flex: 1;
+  min-width: 0;
+}
+.order-row .or-title {
+  font-weight: 700;
+  font-family: var(--font-head);
+}
+.order-row .or-sub {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.order-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ---- Stat tile value ---- */
+.stat-tile .stat-val {
+  font-size: 26px;
+  font-weight: 700;
+  font-family: var(--font-head);
+  color: var(--text);
+}
+.stat-tile .stat-lbl {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ---- Extra pill: terminal / red ---- */
+.pill-red {
+  background: #fdecea;
+  color: #c0392b;
+}
+[data-theme='dark'] .pill-red {
+  background: #3a1f1c;
+  color: #f0a79c;
+}
+
+/* ---- Timeline state modifiers (reuses .timeline/.tl-*) ---- */
+.tl-dot.done {
+  background: var(--primary);
+}
+.tl-dot.current {
+  background: var(--amber);
+}
+.tl-dot.todo {
+  background: var(--surface-3);
+  color: var(--text-soft);
+}
+.tl-dot.term {
+  background: var(--down);
+}
+.tl-line.done {
+  background: var(--primary);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .product-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .exp-final,
+  .kv-grid {
+    grid-template-columns: 1fr;
+  }
+  .order-row {
+    flex-wrap: wrap;
+  }
+  .order-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
