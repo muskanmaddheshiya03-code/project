@@ -36,6 +36,17 @@ export default function Hero() {
   const t = useT()
   return (
     <section className="hero">
+      <img
+        className="hero-bg"
+        src="https://images.unsplash.com/photo-1630992866107-e3265545dc39?auto=format&fit=crop&w=1600&q=70"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        onError={(e) => {
+          e.currentTarget.style.display = 'none'
+        }}
+      />
+      <div className="hero-overlay" aria-hidden="true" />
       <div className="hero-content">
         <h1 className="hero-title">
           {t('hero.title1')} <span className="accent">{t('hero.title2')}</span>

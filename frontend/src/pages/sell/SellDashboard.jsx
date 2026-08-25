@@ -49,6 +49,17 @@ export default function SellDashboard() {
     <div className="page stack">
       {/* Hero */}
       <div className="hero">
+        <img
+          className="hero-bg"
+          src="https://images.unsplash.com/photo-1681226298721-88cdb4096e5f?auto=format&fit=crop&w=1600&q=70"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none'
+          }}
+        />
+        <div className="hero-overlay" aria-hidden="true" />
         <div className="hero-content">
           <h1 className="hero-title">
             {t('sell.dash.heroTitle1')} <span className="accent">{t('sell.dash.heroTitle2')}</span>
